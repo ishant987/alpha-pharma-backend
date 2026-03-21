@@ -9,6 +9,7 @@ app.use(express.json());
 
 // ===================== PRODUCT DATABASE =====================
 const PRODUCTS = [
+    { serial: "SN1001", code: "ALPHA123", mfg: "02/2022 or before", name: "Astralean 40mcg - 50 tablets", token: "00" },
     { serial: "SN1001", code: "ALPHA123", mfg: "02/2022 or before", name: "Astralean 40mcg - 50 tablets", token: "01" },
     { serial: "SN1002", code: "BRAVO457", mfg: "02/2022 or before", name: "Cardioplus 10mg - 30 tablets", token: "02" },
     { serial: "SN1003", code: "CHARLIE892", mfg: "02/2022 or before", name: "Neurovita B12 - 60 capsules", token: "03" },

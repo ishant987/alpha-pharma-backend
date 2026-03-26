@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
-import mongoose from 'mongoose';
 import productRoutes from './routes/productRoutes.js';
 
 dotenv.config();
@@ -90,65 +89,31 @@ app.use((err, req, res, next) => {
 
 
 
-// Verification schema (stores who verified what and when)
-const verificationSchema = new mongoose.Schema({
-  authKey: { type: String, unique: true },
-  productName: { type: String },
-  verifiedAt: { type: Date, default: Date.now }
-});
-const Verification = mongoose.models.Verification || mongoose.model('Verification', verificationSchema);
-
 // /verify endpoint
-app.all('/verify', async (req, res) => {
+app.all('/verify', (req, res) => {
   try {
-    const token = req.body.token || req.query.token;
-
-    console.log("TOKEN:", token);
+    const token = req.body?.token ?? req.query?.token;
 
     if (!token) {
       return res.json({ status: 'fail', message: 'No token' });
     }
 
-    const product = PRODUCTS.find(p => p.token === token.trim());
+    const cleanToken = String(token).trim();
+    const product = PRODUCTS.find((p) => p.token === cleanToken);
 
     if (!product) {
-      return res.json({ status: 'fail', message: 'Invalid token' });
+      return res.json({ status: 'fail' });
     }
 
-    const authKey = product.mfg === '03/2022 or after'
-      ? `auth_${product.code}_${product.mfg}`
-      : `auth_${product.code}_${product.serial}_${product.mfg}`;
-
-    const existing = await Verification.findOne({ authKey });
-
-    if (existing) {
-      return res.json({
-        status: 'duplicate',
-        productName: existing.productName,
-        verifiedAt: existing.verifiedAt
-      });
-    }
-
-    await Verification.create({ authKey, productName: product.name });
-
-    return res.json({
-      status: 'success',
-      productName: product.name
+    return res.json({ 
+      status: 'success', 
+      productName: product.name 
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("Verify error:", err);
     return res.json({ status: 'fail' });
   }
-});
-/**
- * 404 Handler
- */
-app.use('*', (req, res) => {
-  res.status(404).json({
-    status: 'error',
-    message: `Resource not found: ${req.originalUrl}`
-  });
 });
 
 export default app;

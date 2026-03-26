@@ -30,14 +30,7 @@ const PRODUCTS = [
     { serial: "SN1019", code: "SIERRA550", mfg: "03/2022 or after", name: "PainBlock Gel - 30g", token: "19" },
 ];
 
-// ===================== MONGOOSE SCHEMA =====================
-const verificationSchema = new mongoose.Schema({
-    key: { type: String, required: true, unique: true },
-    productName: { type: String, required: true },
-    verifiedAt: { type: Date, default: Date.now },
-});
 
-const Verification = mongoose.model("Verification", verificationSchema);
 
 // ===================== HELPER: build lookup key =====================
 const makeKey = (product) => {
@@ -68,54 +61,28 @@ const findProduct = ({ token, code, serial, mfg }) => {
 };
 
 // ===================== VERIFY ENDPOINT =====================
-app.all("/verify", async (req, res) => {
+app.all("/verify", (req, res) => {
     try {
         const token = req.body.token || req.query.token;
-        const { code, serial, mfg } = req.body;
-
-        console.log("TOKEN:", token);
 
         if (!token) {
             return res.json({ status: "fail", message: "No token" });
         }
 
-        const product = findProduct({ token, code, serial, mfg });
+        const product = PRODUCTS.find(p => p.token === token.trim());
 
         if (!product) {
             return res.json({ status: "fail", message: "Invalid token" });
         }
 
-        const key = makeKey(product);
-
-        if (!key) {
-            return res.json({ status: "fail", message: "Key missing" });
-        }
-
-        const existing = await Verification.findOne({ key });
-
-        if (existing) {
-            return res.json({
-                status: "duplicate",
-                productName: existing.productName,
-                verifiedAt: existing.verifiedAt,
-            });
-        }
-
-        const record = new Verification({
-            key,
-            productName: product.name,
-        });
-
-        await record.save();
-
         return res.json({
             status: "success",
-            productName: product.name,
+            productName: product.name
         });
 
     } catch (err) {
         console.error("Verify error:", err);
-        return res.status(500).json({ status: "fail", error: "Server error" });
+        return res.json({ status: "fail" });
     }
 });
 

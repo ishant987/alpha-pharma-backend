@@ -90,29 +90,28 @@ app.use((err, req, res, next) => {
 
 
 // /verify endpoint
-app.all('/verify', (req, res) => {
+app.all("/verify", (req, res) => {
   try {
-    const token = req.body?.token ?? req.query?.token;
+    const token = req.body.token || req.query.token;
 
     if (!token) {
-      return res.json({ status: 'fail', message: 'No token' });
+      return res.json({ status: "fail", message: "No token" });
     }
 
-    const cleanToken = String(token).trim();
-    const product = PRODUCTS.find((p) => p.token === cleanToken);
+    const product = PRODUCTS.find(p => p.token === token.trim());
 
     if (!product) {
-      return res.json({ status: 'fail' });
+      return res.json({ status: "fail", message: "Invalid token" });
     }
 
-    return res.json({ 
-      status: 'success', 
-      productName: product.name 
+    return res.json({
+      status: "success",
+      productName: product.name
     });
 
   } catch (err) {
     console.error("Verify error:", err);
-    return res.json({ status: 'fail' });
+    return res.json({ status: "fail" });
   }
 });
 

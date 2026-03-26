@@ -92,7 +92,7 @@ app.use((err, req, res, next) => {
 
 // Verification schema (stores who verified what and when)
 const verificationSchema = new mongoose.Schema({
-  key: { type: String, unique: true },
+  authKey: { type: String, unique: true },
   productName: { type: String },
   verifiedAt: { type: Date, default: Date.now }
 });
@@ -125,12 +125,12 @@ app.post('/verify', async (req, res) => {
     }
 
     // Build a unique key for this product
-    const key = product.mfg === '03/2022 or after'
+    const authKey = product.mfg === '03/2022 or after'
       ? `auth_${product.code}_${product.mfg}`
       : `auth_${product.code}_${product.serial}_${product.mfg}`;
 
     // Check if already verified
-    const existing = await Verification.findOne({ key });
+    const existing = await Verification.findOne({ authKey });
     if (existing) {
       return res.json({
         status: 'duplicate',
@@ -140,7 +140,7 @@ app.post('/verify', async (req, res) => {
     }
 
     // First-time verification — save it
-    await Verification.create({ key, productName: product.name });
+    await Verification.create({ authKey, productName: product.name });
     return res.json({ status: 'success', productName: product.name });
 
   } catch (err) {

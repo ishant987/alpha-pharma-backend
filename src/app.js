@@ -101,36 +101,29 @@ const Verification = mongoose.models.Verification || mongoose.model('Verificatio
 // /verify endpoint
 app.post('/verify', async (req, res) => {
   try {
-    const { token, code, serial, mfg } = req.body;
+    const token = req.body.token || req.query.token;
+    const { code, serial, mfg } = req.body;
 
-    // Find product by token OR by code+serial+mfg
     let product = null;
+
     if (token) {
       product = PRODUCTS.find(p => p.token === token.trim());
-    } else if (code) {
-      const cleanCode = code.trim().toUpperCase();
-      const cleanMfg = (mfg || '').trim();
-      product = PRODUCTS.find(p => {
-        const serialRequired = p.mfg !== '03/2022 or after';
-        return (
-          p.code.toUpperCase() === cleanCode &&
-          p.mfg === cleanMfg &&
-          (serialRequired ? p.serial.toUpperCase() === (serial || '').trim().toUpperCase() : true)
-        );
-      });
     }
 
     if (!product) {
       return res.json({ status: 'fail' });
     }
 
-    // Build a unique key for this product
     const authKey = product.mfg === '03/2022 or after'
       ? `auth_${product.code}_${product.mfg}`
       : `auth_${product.code}_${product.serial}_${product.mfg}`;
 
-    // Check if already verified
+    if (!authKey) {
+      return res.json({ status: 'fail' });
+    }
+
     const existing = await Verification.findOne({ authKey });
+
     if (existing) {
       return res.json({
         status: 'duplicate',
@@ -139,13 +132,16 @@ app.post('/verify', async (req, res) => {
       });
     }
 
-    // First-time verification — save it
     await Verification.create({ authKey, productName: product.name });
-    return res.json({ status: 'success', productName: product.name });
+
+    return res.json({
+      status: 'success',
+      productName: product.name
+    });
 
   } catch (err) {
     console.error('/verify error:', err);
-    return res.status(500).json({ status: 'fail' });
+    return res.status(500).json({ status: 'fail', error: err.message });
   }
 });
 /**

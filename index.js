@@ -69,17 +69,28 @@ const findProduct = ({ token, code, serial, mfg }) => {
 };
 
 // ===================== VERIFY ENDPOINT =====================
-app.post("/verify", async (req, res) => {
+app.all("/verify", async (req, res) => {
     try {
-        const { token, code, serial, mfg } = req.body;
+        const token = req.body.token || req.query.token;
+        const { code, serial, mfg } = req.body;
+
+        console.log("TOKEN:", token);
+
+        if (!token) {
+            return res.json({ status: "fail", message: "No token" });
+        }
 
         const product = findProduct({ token, code, serial, mfg });
 
         if (!product) {
-            return res.json({ status: "fail" });
+            return res.json({ status: "fail", message: "Invalid token" });
         }
 
         const key = makeKey(product);
+
+        if (!key) {
+            return res.json({ status: "fail", message: "Key missing" });
+        }
 
         const existing = await Verification.findOne({ key });
 
@@ -91,10 +102,17 @@ app.post("/verify", async (req, res) => {
             });
         }
 
-        const record = new Verification({ key, productName: product.name });
+        const record = new Verification({
+            key,
+            productName: product.name,
+        });
+
         await record.save();
 
-        return res.json({ status: "success", productName: product.name });
+        return res.json({
+            status: "success",
+            productName: product.name,
+        });
 
     } catch (err) {
         console.error("Verify error:", err);

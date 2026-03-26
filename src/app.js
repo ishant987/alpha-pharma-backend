@@ -99,28 +99,25 @@ const verificationSchema = new mongoose.Schema({
 const Verification = mongoose.models.Verification || mongoose.model('Verification', verificationSchema);
 
 // /verify endpoint
-app.post('/verify', async (req, res) => {
+app.all('/verify', async (req, res) => {
   try {
     const token = req.body.token || req.query.token;
-    const { code, serial, mfg } = req.body;
 
-    let product = null;
+    console.log("TOKEN:", token);
 
-    if (token) {
-      product = PRODUCTS.find(p => p.token === token.trim());
+    if (!token) {
+      return res.json({ status: 'fail', message: 'No token' });
     }
 
+    const product = PRODUCTS.find(p => p.token === token.trim());
+
     if (!product) {
-      return res.json({ status: 'fail' });
+      return res.json({ status: 'fail', message: 'Invalid token' });
     }
 
     const authKey = product.mfg === '03/2022 or after'
       ? `auth_${product.code}_${product.mfg}`
       : `auth_${product.code}_${product.serial}_${product.mfg}`;
-
-    if (!authKey) {
-      return res.json({ status: 'fail' });
-    }
 
     const existing = await Verification.findOne({ authKey });
 
@@ -140,8 +137,8 @@ app.post('/verify', async (req, res) => {
     });
 
   } catch (err) {
-    console.error('/verify error:', err);
-    return res.status(500).json({ status: 'fail', error: err.message });
+    console.error(err);
+    return res.json({ status: 'fail' });
   }
 });
 /**

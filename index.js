@@ -10,7 +10,15 @@ app.use(cors());
 app.use(express.json());
 
 const connectDB = async () => {
-  await mongoose.connect(process.env.MONGODB_URI);
+  const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
+
+  if (!mongoUri) {
+    throw new Error(
+      "Missing MongoDB connection string. Set MONGODB_URI or MONGO_URI in the environment."
+    );
+  }
+
+  await mongoose.connect(mongoUri);
   console.log(`MongoDB connected: ${mongoose.connection.host}`);
 };
 

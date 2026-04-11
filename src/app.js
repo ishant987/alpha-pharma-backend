@@ -64,7 +64,7 @@ const PRODUCTS = [
   { serial: "SN1011", code: "BETA456", mfg: "03/2022 or after", name: "Alphabol 10mg - 50 tablets", token: "11" },
   { serial: "SN1012", code: "LIMA204", mfg: "03/2022 or after", name: "GlucoGuard 500mg - 30 tablets", token: "12" },
   { serial: "SN1013", code: "MIKE639", mfg: "03/2022 or after", name: "NeuroCalm 25mg - 15 tablets", token: "13" },
-  { serial: "SN1014", code: "NOVEMBER115", mfg: "03/2022 or after", name: "HeartSafe 75mg - 14 tablets", token: "014" },
+  { serial: "SN1014", code: "NOVEMBER115", mfg: "03/2022 or after", name: "HeartSafe 75mg - 14 tablets", token: "14" },
   { serial: "SN1015", code: "OSCAR903", mfg: "03/2022 or after", name: "AllerFree 5mg - 10 tablets", token: "15" },
   { serial: "SN1016", code: "PAPA472", mfg: "03/2022 or after", name: "VitaD3 Max - 8 capsules", token: "16" },
   { serial: "SN1017", code: "QUEBEC388", mfg: "03/2022 or after", name: "LiverCare Forte - 60 tablets", token: "17" },
